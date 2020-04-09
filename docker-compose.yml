@@ -1,0 +1,36 @@
+version: "3.7"
+volumes:
+  php:
+services:
+  db:
+    image: mysql:8.0.19
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - 127.0.0.1:3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: test
+      MYSQL_USER: john
+      MYSQL_PASSWORD: 123456
+    volumes:
+      - ./tmp/mysql:/var/lib/mysql
+  app:
+    image: matomo:3.13.4-fpm-alpine
+    ports:
+      - 127.0.0.1:9000:9000
+    volumes:
+      - php:/var/www/html
+    environment:
+      MATOMO_DATABASE_HOST: db
+      MATOMO_DATABASE_USERNAME: john
+      MATOMO_DATABASE_PASSWORD: 123456
+      MATOMO_DATABASE_DBNAME: test
+  web:
+    image: nginx:latest
+    links:
+      - app
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - php:/var/www/html
+    ports:
+      - 127.0.0.1:8001:80
